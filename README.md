@@ -1,1 +1,1 @@
-# jshell-wordle
+# java-wordle
