@@ -16,7 +16,18 @@ also words are 5 character long
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
+import java.util.List;
+import java.util.Scanner;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.stream.Stream;
+import java.nio.charset.StandardCharsets;
+import java.io.Reader;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.Random;
 
 public class Wordle {
 
@@ -65,6 +76,7 @@ public class Wordle {
         Input input = new Input();
         int option = -1;
         String failedWord = null;
+        Word word = new Word();
         do {
             System.out.println("- java wordle -");
             System.out.println("1.- new game");
@@ -74,11 +86,13 @@ public class Wordle {
             System.out.println("0.- exit");
             System.out.print("select an option: ");
             option = input.readInt();
+
             switch(option) {
                 case 1:
                 case 2:
-                    if(!game(input, option == 1 ? "gato" : failedWord)) {
-                        failedWord = "gato";
+                    String newWord = word.getWord();
+                    if(!game(input, option == 1 || failedWord == null ? newWord : failedWord)) {
+                        failedWord = newWord;
                         System.out.println("you've lost");
                     } else {
                         failedWord = null;
@@ -98,6 +112,7 @@ public class Wordle {
 
     public static void main(String []args){
         gameLoop();
+        new Word();
     }
 }
 
@@ -123,5 +138,32 @@ class Input {
         } catch(NumberFormatException e) {
             return -1;
         }
+    }
+}
+
+class Word {
+    private Random r;
+    private List <String> words;
+
+    public Word() {
+        loadFile();
+        r = new Random();
+    }
+
+    private void loadFile(){
+        try (final InputStream is = new FileInputStream(new File("donquixote.txt"));
+                final Reader r = new InputStreamReader(is, StandardCharsets.UTF_8);
+                final BufferedReader br = new BufferedReader(r);
+                final Stream<String> lines = br.lines()) {
+                    words = new ArrayList(lines.map(i -> i.split("[ .,]+")).flatMap(Arrays::stream).filter(i -> i.length()==5).map(String::toLowerCase).filter(i -> i.matches("[a-z]+")).filter(i -> i.charAt(i.length()-1)!='s').collect(Collectors.toSet()));
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getWord() {
+        String w = words.get(r.nextInt(words.size()));
+        System.out.println(w);
+        return w;
     }
 }
